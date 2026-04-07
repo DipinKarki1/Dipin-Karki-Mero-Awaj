@@ -21,6 +21,26 @@ const userSchema = new mongoose.Schema({
     minlength: 6,
     select: false,
   },
+  emailVerified: {
+    type: Boolean,
+    default: false,
+  },
+  emailOtpHash: {
+    type: String,
+    select: false,
+  },
+  emailOtpExpires: {
+    type: Date,
+    select: false,
+  },
+  resetOtpHash: {
+    type: String,
+    select: false,
+  },
+  resetOtpExpires: {
+    type: Date,
+    select: false,
+  },
   role: {
     type: String,
     enum: ['user', 'authority', 'admin'],
@@ -48,7 +68,7 @@ const userSchema = new mongoose.Schema({
 // Encrypt password using bcrypt
 userSchema.pre('save', async function (next) {
   if (!this.isModified('password')) {
-    next();
+    return next();
   }
   const salt = await bcrypt.genSalt(10);
   this.password = await bcrypt.hash(this.password, salt);
@@ -68,3 +88,5 @@ userSchema.methods.updateRank = function () {
 };
 
 export default mongoose.model('User', userSchema);
+
+

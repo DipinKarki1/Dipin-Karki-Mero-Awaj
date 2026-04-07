@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import toast from "react-hot-toast";
 import { useAuth } from "../contexts/AuthContext.jsx";
+import { API_BASE_URL } from "../config/api";
 
 export default function Profile() {
   const { user, updateUser } = useAuth();
@@ -35,7 +36,7 @@ export default function Profile() {
     setSavingProfile(true);
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch("http://localhost:5000/api/v1/auth/me", {
+      const res = await fetch(`${API_BASE_URL}/api/v1/auth/me`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -69,7 +70,7 @@ export default function Profile() {
     setSavingPassword(true);
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch("http://localhost:5000/api/v1/auth/me/password", {
+      const res = await fetch(`${API_BASE_URL}/api/v1/auth/me/password`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -186,3 +187,4 @@ export default function Profile() {
     </div>
   );
 }
+

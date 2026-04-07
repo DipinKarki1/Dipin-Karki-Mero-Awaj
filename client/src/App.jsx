@@ -10,6 +10,9 @@ import Home from "./pages/Home.jsx";
 import About from "./pages/About.jsx";
 import SignUp from "./pages/SignUp.jsx";
 import Login from "./pages/Login.jsx";
+import VerifyEmail from "./pages/VerifyEmail.jsx";
+import ForgotPassword from "./pages/ForgotPassword.jsx";
+import ResetPassword from "./pages/ResetPassword.jsx";
 import Issues from "./pages/Issues.jsx";
 import CreateIssue from "./pages/CreateIssue.jsx";
 import Chats from "./pages/Chats.jsx";
@@ -19,7 +22,13 @@ import AdminDashboard from "./pages/AdminDashboard.jsx";
 
 function App() {
   const location = useLocation();
-  const hideNavbar = location.pathname === "/login" || location.pathname === "/signup";
+  const hideNavbar = [
+    "/login",
+    "/signup",
+    "/verify-email",
+    "/forgot-password",
+    "/reset-password",
+  ].includes(location.pathname);
   useEffect(() => {
     const storedTheme = localStorage.getItem("theme") || "dark";
     document.documentElement.setAttribute("data-theme", storedTheme);
@@ -66,6 +75,9 @@ function App() {
             />
             <Route path="/signup" element={<SignUp />} />
             <Route path="/login" element={<Login />} />
+            <Route path="/verify-email" element={<VerifyEmail />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
             <Route 
               path="/awareness" 
               element={

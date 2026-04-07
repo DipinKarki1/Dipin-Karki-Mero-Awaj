@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useAuth } from "../../contexts/AuthContext";
+import { API_BASE_URL } from "../../config/api";
 
 export default function ChatWindow({ ticketId, ticket }) {
   const [text, setText] = useState("");
@@ -11,7 +12,7 @@ export default function ChatWindow({ ticketId, ticket }) {
     const fetchMessages = async () => {
       try {
         const token = localStorage.getItem("token");
-        const res = await fetch(`http://localhost:5000/api/v1/messages/${ticketId}`, {
+        const res = await fetch(`${API_BASE_URL}/api/v1/messages/${ticketId}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         const data = await res.json();
@@ -59,7 +60,7 @@ export default function ChatWindow({ ticketId, ticket }) {
 
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch(`http://localhost:5000/api/v1/messages`, {
+      const res = await fetch(`${API_BASE_URL}/api/v1/messages`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -135,3 +136,4 @@ export default function ChatWindow({ ticketId, ticket }) {
     </div>
   );
 }
+

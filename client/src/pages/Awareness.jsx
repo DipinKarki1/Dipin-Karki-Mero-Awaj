@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { useAuth } from "../contexts/AuthContext";
 import { BookOpenIcon, MegaphoneIcon, ShieldCheckIcon, GlobeAmericasIcon, PlusIcon } from "@heroicons/react/24/solid";
+import { API_BASE_URL } from "../config/api";
 
 export default function Awareness() {
   const [articles, setArticles] = useState([]);
@@ -34,7 +35,7 @@ export default function Awareness() {
 
   const fetchArticles = async () => {
     try {
-      const res = await fetch("http://localhost:5000/api/v1/awareness");
+      const res = await fetch(`${API_BASE_URL}/api/v1/awareness`);
       const data = await res.json();
       if (data.success) {
         setArticles(data.data);
@@ -102,7 +103,7 @@ export default function Awareness() {
       if (imageFile) {
         formData.append("image", imageFile);
       }
-      const res = await fetch("http://localhost:5000/api/v1/awareness", {
+      const res = await fetch(`${API_BASE_URL}/api/v1/awareness`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -135,7 +136,7 @@ export default function Awareness() {
         formData.append("image", editImageFile);
       }
 
-      const res = await fetch(`http://localhost:5000/api/v1/awareness/${editingArticle._id}`, {
+      const res = await fetch(`${API_BASE_URL}/api/v1/awareness/${editingArticle._id}`, {
         method: "PUT",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -162,7 +163,7 @@ export default function Awareness() {
     if (!confirmDelete) return;
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch(`http://localhost:5000/api/v1/awareness/${article._id}`, {
+      const res = await fetch(`${API_BASE_URL}/api/v1/awareness/${article._id}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -547,3 +548,4 @@ export default function Awareness() {
     </div>
   );
 }
+

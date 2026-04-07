@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
 import { useAuth } from "../contexts/AuthContext.jsx";
 import {
+import { API_BASE_URL } from "../config/api";
   NewspaperIcon,
   HandThumbUpIcon,
   EyeIcon,
@@ -28,7 +29,7 @@ export default function Issues() {
   const fetchIssues = async () => {
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch("http://localhost:5000/api/v1/issues", {
+      const res = await fetch(`${API_BASE_URL}/api/v1/issues`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
@@ -56,7 +57,7 @@ export default function Issues() {
 
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch(`http://localhost:5000/api/v1/issues/${id}/vote`, {
+      const res = await fetch(`${API_BASE_URL}/api/v1/issues/${id}/vote`, {
         method: "PUT",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -86,7 +87,7 @@ export default function Issues() {
     e.preventDefault();
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch(`http://localhost:5000/api/v1/issues/${feedbackIssue._id}/feedback`, {
+      const res = await fetch(`${API_BASE_URL}/api/v1/issues/${feedbackIssue._id}/feedback`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -112,7 +113,7 @@ export default function Issues() {
     e.preventDefault();
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch(`http://localhost:5000/api/v1/issues/${statusUpdateIssue._id}/status`, {
+      const res = await fetch(`${API_BASE_URL}/api/v1/issues/${statusUpdateIssue._id}/status`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -504,5 +505,6 @@ export default function Issues() {
     </div>
   );
 }
+
 
 

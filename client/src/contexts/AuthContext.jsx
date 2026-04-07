@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import toast from "react-hot-toast";
 import { io } from "socket.io-client";
+import { API_BASE_URL, SOCKET_URL } from "../config/api";
 
 const AuthContext = createContext();
 
@@ -11,36 +12,47 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     if (user) {
-      const newSocket = io("http://localhost:5000");
+      const newSocket = io(SOCKET_URL);
       setSocket(newSocket);
 
       return () => newSocket.close();
     }
   }, [user]);
 
+  const applyAuthSession = (data) => {
+    if (!data?.user) return;
+    setUser(data.user);
+    localStorage.setItem('user', JSON.stringify(data.user));
+    if (data.token) {
+      localStorage.setItem('token', data.token);
+    }
+  };
+
   const login = async (email, password, role, name) => {
     setLoading(true);
     try {
-      const res = await fetch('http://localhost:5000/api/v1/auth/login', {
+      const res = await fetch(`${API_BASE_URL}/api/v1/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password, role, name }),
       });
       const data = await res.json();
       if (data.success) {
-        setUser(data.user);
-        localStorage.setItem('user', JSON.stringify(data.user));
-        localStorage.setItem('token', data.token);
+        applyAuthSession(data);
         toast.success('Logged in successfully!');
-        return true;
-      } else {
-        toast.error(data.message || 'Login failed');
-        return false;
+        return { ok: true };
       }
+      if (data.requiresVerification) {
+        localStorage.setItem('pendingEmail', data.email || email);
+        toast.error(data.message || 'Email not verified');
+        return { ok: false, requiresVerification: true, email: data.email || email };
+      }
+      toast.error(data.message || 'Login failed');
+      return { ok: false };
     } catch (err) {
       console.error('Login Error:', err);
       toast.error('Server connection failed. Is the backend running?');
-      return false;
+      return { ok: false };
     } finally {
       setLoading(false);
     }
@@ -49,26 +61,28 @@ export function AuthProvider({ children }) {
   const signup = async (userData) => {
     setLoading(true);
     try {
-      const res = await fetch('http://localhost:5000/api/v1/auth/register', {
+      const res = await fetch(`${API_BASE_URL}/api/v1/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(userData),
       });
       const data = await res.json();
-      if (data.success) {
-        setUser(data.user);
-        localStorage.setItem('user', JSON.stringify(data.user));
-        localStorage.setItem('token', data.token);
-        toast.success('Account created successfully!');
-        return true;
-      } else {
-        toast.error(data.message || 'Signup failed');
-        return false;
+      if (data.success && data.requiresVerification) {
+        localStorage.setItem('pendingEmail', data.email || userData.email);
+        toast.success(data.message || 'Verification code sent');
+        return { ok: true, requiresVerification: true, email: data.email || userData.email };
       }
+      if (data.success) {
+        applyAuthSession(data);
+        toast.success('Account created successfully!');
+        return { ok: true };
+      }
+      toast.error(data.message || 'Signup failed');
+      return { ok: false };
     } catch (err) {
       console.error('Signup Error:', err);
       toast.error('Server connection failed. Is the backend running?');
-      return false;
+      return { ok: false };
     } finally {
       setLoading(false);
     }
@@ -87,7 +101,16 @@ export function AuthProvider({ children }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, socket, login, signup, logout, updateUser, loading }}>
+    <AuthContext.Provider value={{
+      user,
+      socket,
+      login,
+      signup,
+      logout,
+      updateUser,
+      setAuthSession: applyAuthSession,
+      loading,
+    }}>
       {children}
     </AuthContext.Provider>
   );
@@ -101,7 +124,10 @@ export function useAuth() {
       user: { id: 1, name: "User" },
       socket: { on: () => {}, off: () => {}, emit: () => {} },
       updateUser: () => {},
+      setAuthSession: () => {},
     };
   }
   return context;
 }
+
+

@@ -6,6 +6,7 @@ import L from "leaflet";
 import markerIcon from "leaflet/dist/images/marker-icon.png";
 import markerShadow from "leaflet/dist/images/marker-shadow.png";
 import { useAuth } from "../contexts/AuthContext.jsx";
+import { API_BASE_URL } from "../config/api";
 
 const defaultMarkerIcon = new L.Icon({
   iconUrl: markerIcon,
@@ -221,7 +222,7 @@ export default function CreateIssue() {
         formData.append("image", imageFile);
       }
 
-      const res = await fetch("http://localhost:5000/api/v1/issues", {
+      const res = await fetch(`${API_BASE_URL}/api/v1/issues`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -428,3 +429,4 @@ export default function CreateIssue() {
     </div>
   );
 }
+

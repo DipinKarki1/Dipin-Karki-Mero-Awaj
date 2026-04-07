@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import toast from "react-hot-toast";
 import { useAuth } from "../contexts/AuthContext.jsx";
+import { API_BASE_URL } from "../config/api";
 
 const CATEGORY_OPTIONS = ["Road", "Water", "Electricity"];
 
@@ -23,10 +24,10 @@ export default function AdminDashboard() {
     try {
       const token = localStorage.getItem("token");
       const [overviewRes, usersRes] = await Promise.all([
-        fetch("http://localhost:5000/api/v1/admin/overview", {
+        fetch(`${API_BASE_URL}/api/v1/admin/overview`, {
           headers: { Authorization: `Bearer ${token}` },
         }),
-        fetch("http://localhost:5000/api/v1/admin/users", {
+        fetch(`${API_BASE_URL}/api/v1/admin/users`, {
           headers: { Authorization: `Bearer ${token}` },
         }),
       ]);
@@ -107,7 +108,7 @@ export default function AdminDashboard() {
     setUpdatingId(userId);
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch(`http://localhost:5000/api/v1/admin/users/${userId}`, {
+      const res = await fetch(`${API_BASE_URL}/api/v1/admin/users/${userId}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -157,7 +158,7 @@ export default function AdminDashboard() {
     setDeletingId(userId);
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch(`http://localhost:5000/api/v1/admin/users/${userId}`, {
+      const res = await fetch(`${API_BASE_URL}/api/v1/admin/users/${userId}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -448,3 +449,4 @@ export default function AdminDashboard() {
     </div>
   );
 }
+

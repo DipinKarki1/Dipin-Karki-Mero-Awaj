@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
+import { API_BASE_URL } from "../../config/api";
 
 export default function ChatList() {
   const { ticketId } = useParams();
@@ -9,7 +10,7 @@ export default function ChatList() {
     const fetchTickets = async () => {
       try {
         const token = localStorage.getItem("token");
-        const res = await fetch("http://localhost:5000/api/v1/issues/chat", {
+        const res = await fetch(`${API_BASE_URL}/api/v1/issues/chat`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         const data = await res.json();
@@ -52,3 +53,4 @@ export default function ChatList() {
     </div>
   );
 }
+

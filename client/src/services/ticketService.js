@@ -1,7 +1,8 @@
+import { API_BASE_URL } from "../config/api";
 export const getTicketById = async (id) => {
   try {
     const token = localStorage.getItem("token");
-    const res = await fetch(`http://localhost:5000/api/v1/issues/${id}`, {
+    const res = await fetch(`${API_BASE_URL}/api/v1/issues/${id}`, {
       headers: { Authorization: `Bearer ${token}` },
     });
     const data = await res.json();
@@ -13,3 +14,4 @@ export const getTicketById = async (id) => {
     return { success: false, message: "Failed to fetch ticket details" };
   }
 };
+

@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useAuth } from "../contexts/AuthContext.jsx";
 import logo from "../../image/Mero awaj logo.png";
 import { BellIcon, MoonIcon, SunIcon } from "@heroicons/react/24/outline";
+import { API_BASE_URL } from "../config/api";
 
 export default function Navbar() {
   const { user, logout } = useAuth();
@@ -33,7 +34,7 @@ export default function Navbar() {
     try {
       setLoadingNotifications(true);
       const token = localStorage.getItem("token");
-      const res = await fetch("http://localhost:5000/api/v1/issues/notifications", {
+      const res = await fetch(`${API_BASE_URL}/api/v1/issues/notifications`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
@@ -226,6 +227,7 @@ export default function Navbar() {
     </nav>
   );
 }
+
 
 
 

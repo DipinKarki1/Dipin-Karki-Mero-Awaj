@@ -18,14 +18,35 @@ dotenv.config();
 
 const app = express();
 const httpServer = createServer(app);
+
+const normalizeOrigin = (origin) => (origin ? origin.trim().replace(/\/+$/, "") : "");
+
+const envOrigins = process.env.CLIENT_URL
+  ? process.env.CLIENT_URL.split(",").map(normalizeOrigin)
+  : [];
+const allowedOrigins = [...new Set([...envOrigins, "http://localhost:5173"].map(normalizeOrigin))]
+  .filter(Boolean);
+
+const corsOptions = {
+  origin: (origin, callback) => {
+    if (!origin) return callback(null, true);
+    const normalizedOrigin = normalizeOrigin(origin);
+    if (allowedOrigins.includes(normalizedOrigin)) return callback(null, true);
+    return callback(new Error("Not allowed by CORS"));
+  },
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+};
+
 const io = new Server(httpServer, {
   cors: {
-    origin: "http://localhost:5173",
-    methods: ["GET", "POST", "PUT"],
+    origin: allowedOrigins,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    credentials: true,
   },
 });
 
-app.use(cors());
+app.use(cors(corsOptions));
 app.use(express.json());
 
 const __filename = fileURLToPath(import.meta.url);
@@ -99,6 +120,7 @@ const ensureAdminUser = async () => {
       email: adminEmail,
       password: adminPassword,
       role: "admin",
+      emailVerified: true,
     });
     console.log("Seeded default admin user:", adminEmail);
     return;
@@ -108,6 +130,11 @@ const ensureAdminUser = async () => {
 
   if (existing.role !== "admin") {
     existing.role = "admin";
+    needsSave = true;
+  }
+
+  if (!existing.emailVerified) {
+    existing.emailVerified = true;
     needsSave = true;
   }
 
@@ -147,3 +174,7 @@ httpServer.listen(port, () => {
       }
     });
 });
+
+
+
+

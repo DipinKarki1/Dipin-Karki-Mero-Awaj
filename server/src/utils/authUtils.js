@@ -24,6 +24,8 @@ export const sendTokenResponse = (user, statusCode, res) => {
       authorityCategory: user.authorityCategory || null,
       civicPoints: user.civicPoints,
       rank: user.rank,
+      emailVerified: user.emailVerified,
     },
   });
 };
+

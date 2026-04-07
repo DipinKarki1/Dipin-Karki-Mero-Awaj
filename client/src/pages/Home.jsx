@@ -12,6 +12,7 @@ import {
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useAuth } from "../contexts/AuthContext.jsx";
+import { API_BASE_URL } from "../config/api";
 
 export default function Home() {
   const { user } = useAuth();
@@ -21,7 +22,7 @@ export default function Home() {
   useEffect(() => {
     const loadFeedbacks = async () => {
       try {
-        const res = await fetch("http://localhost:5000/api/v1/issues/feedbacks");
+        const res = await fetch(`${API_BASE_URL}/api/v1/issues/feedbacks`);
         const data = await res.json();
         if (data.success) {
           setFeedbacks(data.data || []);
@@ -301,3 +302,4 @@ export default function Home() {
     </div>
   );
 }
+
