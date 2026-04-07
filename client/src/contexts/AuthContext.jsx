@@ -5,8 +5,17 @@ import { API_BASE_URL, SOCKET_URL } from "../config/api";
 
 const AuthContext = createContext();
 
+const safeJsonParse = (value) => {
+  if (!value || value === "undefined") return null;
+  try {
+    return JSON.parse(value);
+  } catch {
+    return null;
+  }
+};
+
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(JSON.parse(localStorage.getItem('user')) || null);
+  const [user, setUser] = useState(() => safeJsonParse(localStorage.getItem('user')));
   const [loading, setLoading] = useState(false);
   const [socket, setSocket] = useState(null);
 
@@ -129,5 +138,7 @@ export function useAuth() {
   }
   return context;
 }
+
+
 
 
