@@ -1,28 +1,40 @@
-import nodemailer from 'nodemailer';
+import sgMail from '@sendgrid/mail';
 
-const buildTransporter = () => {
-  const user = process.env.EMAIL_USER;
-  const pass = process.env.EMAIL_PASS;
+const getApiKey = () => {
+  const apiKey = process.env.SEND_GRID_API_KEY;
+  if (!apiKey) {
+    throw new Error('Email service not configured. Please set SEND_GRID_API_KEY in server .env');
+  }
+  return apiKey;
+};
 
-  if (!user || !pass) {
-    throw new Error('Email service not configured. Please set EMAIL_USER and EMAIL_PASS in server .env');
+const getFromAddress = () => {
+  const fromAddress =
+    process.env.SEND_GRID_FROM_EMAIL || process.env.EMAIL_FROM || process.env.EMAIL_USER;
+
+  if (!fromAddress) {
+    throw new Error('Email service not configured. Please set SEND_GRID_FROM_EMAIL in server .env');
   }
 
-  return nodemailer.createTransport({
-    service: 'gmail',
-    auth: { user, pass },
-  });
+  return fromAddress;
 };
 
 export const sendEmail = async ({ to, subject, html, text }) => {
-  const transporter = buildTransporter();
-  const fromAddress = process.env.EMAIL_FROM || process.env.EMAIL_USER;
+  sgMail.setApiKey(getApiKey());
 
-  return transporter.sendMail({
-    from: `Mero Awaj <${fromAddress}>`,
+  const msg = {
     to,
+    from: getFromAddress(),
     subject,
-    text,
-    html,
-  });
+  };
+
+  if (text) {
+    msg.text = text;
+  }
+
+  if (html) {
+    msg.html = html;
+  }
+
+  return sgMail.send(msg);
 };
