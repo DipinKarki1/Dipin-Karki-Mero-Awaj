@@ -155,6 +155,79 @@ const ensureAdminUser = async () => {
   }
 };
 
+const ensureAuthorityUsers = async () => {
+  const authoritySeeds = [
+    {
+      name: "Road Authority",
+      email: "roadmeroawaj@gmail.com",
+      password: "password@1",
+      authorityCategory: "Road",
+    },
+    {
+      name: "Water Authority",
+      email: "watermeroawaj@gmail.com",
+      password: "password@2",
+      authorityCategory: "Water",
+    },
+    {
+      name: "Electricity Authority",
+      email: "electricitymeroawaj@gmail.com",
+      password: "password@3",
+      authorityCategory: "Electricity",
+    },
+  ];
+
+  for (const seed of authoritySeeds) {
+    const existing = await User.findOne({ email: seed.email }).select("+password");
+
+    if (!existing) {
+      await User.create({
+        name: seed.name,
+        email: seed.email,
+        password: seed.password,
+        role: "authority",
+        authorityCategory: seed.authorityCategory,
+        emailVerified: true,
+      });
+      console.log("Seeded authority user:", seed.email);
+      continue;
+    }
+
+    let needsSave = false;
+
+    if (existing.role !== "authority") {
+      existing.role = "authority";
+      needsSave = true;
+    }
+
+    if (existing.authorityCategory !== seed.authorityCategory) {
+      existing.authorityCategory = seed.authorityCategory;
+      needsSave = true;
+    }
+
+    if (!existing.emailVerified) {
+      existing.emailVerified = true;
+      needsSave = true;
+    }
+
+    if (!existing.name || existing.name !== seed.name) {
+      existing.name = seed.name;
+      needsSave = true;
+    }
+
+    const passwordMatches = await existing.matchPassword(seed.password);
+    if (!passwordMatches) {
+      existing.password = seed.password;
+      needsSave = true;
+    }
+
+    if (needsSave) {
+      await existing.save();
+      console.log("Updated authority credentials for:", seed.email);
+    }
+  }
+};
+
 // Start server first
 httpServer.listen(port, () => {
   console.log(`Server running on port ${port}`);
@@ -166,6 +239,7 @@ httpServer.listen(port, () => {
     .then(async () => {
       console.log("Connected to MongoDB successfully!");
       await ensureAdminUser();
+      await ensureAuthorityUsers();
     })
     .catch((err) => {
       console.error("CRITICAL: MongoDB connection error:", err.message);
