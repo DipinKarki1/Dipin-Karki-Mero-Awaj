@@ -13,8 +13,10 @@ import {
 } from "@heroicons/react/24/solid";
 
 export default function Issues() {
+  const ITEMS_PER_PAGE = 10;
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
   const [selectedIssue, setSelectedIssue] = useState(null);
   const [feedbackIssue, setFeedbackIssue] = useState(null);
   const [feedbackData, setFeedbackData] = useState({ rating: 5, comment: "" });
@@ -141,6 +143,13 @@ export default function Issues() {
     Resolved: { color: "text-green-400 border-green-500/40", icon: <CheckCircleIcon className="w-4 h-4" /> },
   };
   const getStatusMeta = (status) => statusStyle[status] || statusStyle.Open;
+  const totalPages = Math.max(1, Math.ceil(items.length / ITEMS_PER_PAGE));
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const paginatedItems = items.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+
+  useEffect(() => {
+    setCurrentPage((prevPage) => Math.min(prevPage, totalPages));
+  }, [totalPages]);
 
   return (
     <div className="bg-gradient-to-br from-[#120406] via-[#1d080b] to-[#0a0203] p-6 rounded-xl shadow-xl max-w-6xl mx-auto">
@@ -173,126 +182,166 @@ export default function Issues() {
       ) : items.length === 0 ? (
         <div className="text-center py-10 text-white">No issues reported yet.</div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {items.map((i) => {
-            const hasVoted = user && Array.isArray(i.votes) && i.votes.includes(user.id);
-            const isOwner = user && (i.author?._id === user.id);
-            return (
-              <div
-                key={i._id}
-                className="bg-[#2b0f12]/80 border border-[#4a1b1b] 
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {paginatedItems.map((i) => {
+              const hasVoted = user && Array.isArray(i.votes) && i.votes.includes(user.id);
+              const isOwner = user && (i.author?._id === user.id);
+              return (
+                <div
+                  key={i._id}
+                  className="bg-[#2b0f12]/80 border border-[#4a1b1b] 
                            rounded-2xl shadow-lg p-6 text-white"
-              >
-              <div className="flex items-start justify-between gap-3">
-                <h3 className="text-xl font-semibold">{i.title}</h3>
-                <span
-                  className={`text-xs px-3 py-1 rounded-full border flex items-center gap-1.5 ${getStatusMeta(i.status).color}`}
                 >
-                  {getStatusMeta(i.status).icon}
-                  {i.status || "Open"}
-                </span>
-              </div>
-
-              <div className="mt-2 text-xs text-gray-400 flex justify-between">
-                <span>Category: {i.category}</span>
-                <span>Loc: {i.location}</span>
-              </div>
-
-              {i.imageUrl && (
-                <div className="mt-4">
-                  <img
-                    src={i.imageUrl}
-                    alt={i.title}
-                    className="w-full h-40 object-cover rounded-lg border border-[#4a1b1b]"
-                    onError={(e) => {
-                      e.currentTarget.style.display = "none";
-                    }}
-                  />
+                <div className="flex items-start justify-between gap-3">
+                  <h3 className="text-xl font-semibold">{i.title}</h3>
+                  <span
+                    className={`text-xs px-3 py-1 rounded-full border flex items-center gap-1.5 ${getStatusMeta(i.status).color}`}
+                  >
+                    {getStatusMeta(i.status).icon}
+                    {i.status || "Open"}
+                  </span>
                 </div>
-              )}
 
-              <p className="mt-3 text-gray-300 leading-relaxed line-clamp-2">
-                {i.description}
-              </p>
+                <div className="mt-2 text-xs text-gray-400 flex justify-between">
+                  <span>Category: {i.category}</span>
+                  <span>Loc: {i.location}</span>
+                </div>
 
-              {/* Progress Tracker Button */}
-              {i.progressUpdates && i.progressUpdates.length > 0 && (
-                <div className="mt-4 p-3 bg-[#3b1416]/50 border border-[#5a1f21] rounded-lg">
-                  <div className="flex items-center justify-between text-xs mb-2">
-                    <span className="text-[#9A0D1B] font-bold uppercase tracking-wider flex items-center gap-1">
-                      <ArrowPathIcon className="w-3 h-3" />
-                      Latest Update
-                    </span>
-                    <span className="text-gray-500">
-                      {new Date(i.progressUpdates[i.progressUpdates.length - 1].updatedAt).toLocaleDateString()}
-                    </span>
+                {i.imageUrl && (
+                  <div className="mt-4">
+                    <img
+                      src={i.imageUrl}
+                      alt={i.title}
+                      className="w-full h-40 object-cover rounded-lg border border-[#4a1b1b]"
+                      onError={(e) => {
+                        e.currentTarget.style.display = "none";
+                      }}
+                    />
                   </div>
-                  <p className="text-sm text-gray-200 italic">
-                    "{i.progressUpdates[i.progressUpdates.length - 1].message}"
-                  </p>
-                </div>
-              )}
+                )}
 
-              {/* Actions */}
-              <div className="mt-5 flex items-center justify-between">
-                <div className="flex gap-4">
-                  {user?.role === "user" && !isOwner && (
+                <p className="mt-3 text-gray-300 leading-relaxed line-clamp-2">
+                  {i.description}
+                </p>
+
+                {/* Progress Tracker Button */}
+                {i.progressUpdates && i.progressUpdates.length > 0 && (
+                  <div className="mt-4 p-3 bg-[#3b1416]/50 border border-[#5a1f21] rounded-lg">
+                    <div className="flex items-center justify-between text-xs mb-2">
+                      <span className="text-[#9A0D1B] font-bold uppercase tracking-wider flex items-center gap-1">
+                        <ArrowPathIcon className="w-3 h-3" />
+                        Latest Update
+                      </span>
+                      <span className="text-gray-500">
+                        {new Date(i.progressUpdates[i.progressUpdates.length - 1].updatedAt).toLocaleDateString()}
+                      </span>
+                    </div>
+                    <p className="text-sm text-gray-200 italic">
+                      "{i.progressUpdates[i.progressUpdates.length - 1].message}"
+                    </p>
+                  </div>
+                )}
+
+                {/* Actions */}
+                <div className="mt-5 flex items-center justify-between">
+                  <div className="flex gap-4">
+                    {user?.role === "user" && !isOwner && (
+                      <button
+                        onClick={() => handleVote(i._id)}
+                        disabled={hasVoted}
+                        title={hasVoted ? "You already voted" : "Vote for this issue"}
+                        className={`flex items-center gap-2 px-4 py-2 rounded-lg transition text-white ${
+                          hasVoted
+                            ? "bg-red-500/60 cursor-not-allowed"
+                            : "bg-red-700 hover:bg-red-600"
+                        }`}
+                      >
+                        <HandThumbUpIcon className="w-5" />
+                        {Array.isArray(i.votes) ? i.votes.length : 0} Supports
+                      </button>
+                    )}
+                    {user?.role === "user" && isOwner && (
+                      <span className="text-xs text-gray-400 italic">
+                        You cannot vote on your own issue.
+                      </span>
+                    )}
+
                     <button
-                      onClick={() => handleVote(i._id)}
-                      disabled={hasVoted}
-                      title={hasVoted ? "You already voted" : "Vote for this issue"}
-                      className={`flex items-center gap-2 px-4 py-2 rounded-lg transition text-white ${
-                        hasVoted
-                          ? "bg-red-500/60 cursor-not-allowed"
-                          : "bg-red-700 hover:bg-red-600"
-                      }`}
-                    >
-                      <HandThumbUpIcon className="w-5" />
-                      {Array.isArray(i.votes) ? i.votes.length : 0} Supports
-                    </button>
-                  )}
-                  {user?.role === "user" && isOwner && (
-                    <span className="text-xs text-gray-400 italic">
-                      You cannot vote on your own issue.
-                    </span>
-                  )}
-
-                  <button
-                    onClick={() => setSelectedIssue(i)}
-                    className="flex items-center gap-2 px-4 py-2 rounded-lg 
+                      onClick={() => setSelectedIssue(i)}
+                      className="flex items-center gap-2 px-4 py-2 rounded-lg 
                                bg-[#3b1416] border border-[#5a1f21] 
                                hover:border-red-500 transition text-white"
-                  >
-                    <EyeIcon className="w-5" />
-                    Track Progress
-                  </button>
+                    >
+                      <EyeIcon className="w-5" />
+                      Track Progress
+                    </button>
 
-                  {i.status === "Resolved" && user && i.author?._id === user.id && !i.feedback && (
-                    <button
-                      onClick={() => setFeedbackIssue(i)}
-                      className="flex items-center gap-2 px-4 py-2 rounded-lg 
+                    {i.status === "Resolved" && user && i.author?._id === user.id && !i.feedback && (
+                      <button
+                        onClick={() => setFeedbackIssue(i)}
+                        className="flex items-center gap-2 px-4 py-2 rounded-lg 
                                  bg-green-700 hover:bg-green-600 transition text-white"
-                    >
-                      Give Feedback
-                    </button>
-                  )}
+                      >
+                        Give Feedback
+                      </button>
+                    )}
 
-                  {(user?.role === "authority" || user?.role === "admin") && i.status !== "Resolved" && (
-                    <button
-                      onClick={() => setStatusUpdateIssue(i)}
-                      className="flex items-center gap-2 px-4 py-2 rounded-lg 
+                    {(user?.role === "authority" || user?.role === "admin") && i.status !== "Resolved" && (
+                      <button
+                        onClick={() => setStatusUpdateIssue(i)}
+                        className="flex items-center gap-2 px-4 py-2 rounded-lg 
                                  bg-blue-700 hover:bg-blue-600 transition text-white"
-                    >
-                      Update Status
-                    </button>
-                  )}
+                      >
+                        Update Status
+                      </button>
+                    )}
+                  </div>
+                  <span className="text-xs text-gray-500">By: {i.author?.name || "Unknown"}</span>
                 </div>
-                <span className="text-xs text-gray-500">By: {i.author?.name || "Unknown"}</span>
-              </div>
-              </div>
-            );
-          })}
-        </div>
+                </div>
+              );
+            })}
+          </div>
+
+          <div className="mt-8 flex flex-col gap-4 border-t border-[#4a1b1b] pt-6 md:flex-row md:items-center md:justify-between">
+            <p className="text-sm text-gray-400">
+              Showing {startIndex + 1}-{Math.min(startIndex + paginatedItems.length, items.length)} of {items.length} issues
+            </p>
+
+            <div className="flex items-center justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setCurrentPage((prevPage) => Math.max(prevPage - 1, 1))}
+                disabled={currentPage === 1}
+                className={`rounded-lg border px-4 py-2 text-sm font-semibold transition ${
+                  currentPage === 1
+                    ? "cursor-not-allowed border-[#4a1b1b] bg-[#2b0f12]/40 text-gray-500"
+                    : "border-[#5a1f21] bg-[#2b0f12] text-white hover:border-red-500"
+                }`}
+              >
+                Previous
+              </button>
+
+              <span className="rounded-lg border border-[#5a1f21] bg-[#2b0f12] px-4 py-2 text-sm font-semibold text-white">
+                Page {currentPage} of {totalPages}
+              </span>
+
+              <button
+                type="button"
+                onClick={() => setCurrentPage((prevPage) => Math.min(prevPage + 1, totalPages))}
+                disabled={currentPage === totalPages}
+                className={`rounded-lg border px-4 py-2 text-sm font-semibold transition ${
+                  currentPage === totalPages
+                    ? "cursor-not-allowed border-[#4a1b1b] bg-[#2b0f12]/40 text-gray-500"
+                    : "border-[#5a1f21] bg-[#9A0D1B] text-white hover:bg-[#7A0A15]"
+                }`}
+              >
+                Next Page
+              </button>
+            </div>
+          </div>
+        </>
       )}
 
       {/* Status Update Modal (Authority Only) */}
